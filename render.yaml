@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: notes-flow-backend
+    env: node
+    buildCommand: cd BACKEND && npm install
+    startCommand: cd BACKEND && npm start
+    rootDir: BACKEND
