@@ -1,164 +1,262 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Zap, Lock, Sparkles } from "lucide-react";
-import Link from "next/link";
-import dynamic from "next/dynamic";
-import { Suspense, useRef } from "react";
-// import { AnimatedGlobe } from "./animated-globe";
-
-const ParticleField = dynamic(
-  () =>
-    import("@/components/3d/particle-field").then((mod) => ({
-      default: mod.ParticleField,
-    })),
-  {
-    ssr: false,
-    loading: () => <div className="absolute inset-0" />,
-  },
-);
+import { useEffect, useRef } from "react";
 
 export function LandingPage() {
   const containerRef = useRef(null);
-  const { scrollY } = useScroll();
+  const wrapperRef = useRef(null);
 
-  const scale = useTransform(scrollY, [0, 300], [1, 0.95]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0.8]);
+  useEffect(() => {
+    const container = containerRef.current;
+    const wrapper = wrapperRef.current;
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
+    if (container && wrapper) {
+      const handleMouseMove = (e: MouseEvent) => {
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8 },
-    },
-  };
+        // Calculate tilt
+        const tiltX = -(y / rect.height) * 15; // Max 15 deg tilt
+        const tiltY = (x / rect.width) * 15;
+
+        wrapper.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+      };
+
+      const handleMouseLeave = () => {
+        wrapper.style.transform = `rotateX(0deg) rotateY(0deg)`;
+      };
+
+      container.addEventListener('mousemove', handleMouseMove);
+      container.addEventListener('mouseleave', handleMouseLeave);
+
+      return () => {
+        container.removeEventListener('mousemove', handleMouseMove);
+        container.removeEventListener('mouseleave', handleMouseLeave);
+      };
+    }
+  }, []);
 
   return (
-    <main className="bg-black overflow-x-hidden text-left" ref={containerRef}>
+    <main className="bg-black overflow-x-hidden text-left min-h-screen">
       {/* HERO SECTION */}
-      <section className="relative min-h-screen overflow-hidden flex items-center justify-start px-4 sm:px-6 lg:px-8">
-        {/* PARTICLE BACKGROUND */}
-        <Suspense fallback={<div className="absolute inset-0" />}>
-          <ParticleField />
-        </Suspense>
+      <section className="relative min-h-screen flex items-center justify-center relative">
 
-        {/* BACKGROUND GRADIENT */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-blue-950/30 to-black pointer-events-none" />
+        {/* STYLE TAG FOR CUSTOM CSS */}
+        <style jsx>{`
+          body {
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          }
 
-        {/* GLOW BLOBS - Scaled down for mobile */}
-        <div className="absolute top-1/4 -right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-600 rounded-full blur-3xl opacity-20 animate-blob" />
-        <div className="absolute bottom-1/4 -left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-cyan-500 rounded-full blur-3xl opacity-20 animate-blob animation-delay-2000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-48 sm:w-96 h-48 sm:h-96 bg-blue-400 rounded-full blur-3xl opacity-10 animate-blob animation-delay-4000" />
+          /* Background Blobs */
+          .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.4;
+            animation: float 10s infinite ease-in-out alternate;
+          }
+          .blob-1 { top: 10%; left: 10%; width: 400px; height: 400px; background: rgba(37, 99, 235, 0.4); }
+          .blob-2 { bottom: 10%; right: 10%; width: 500px; height: 500px; background: rgba(56, 189, 248, 0.3); animation-delay: -5s; }
 
-        {/* MAIN CONTENT WRAPPER */}
-        <div className="relative z-10 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center min-h-screen py-12 sm:py-0">
-            {/* LEFT SIDE: GLOBE REMOVED */}
+          @keyframes float {
+            0% { transform: translateY(0px) scale(1); }
+            100% { transform: translateY(50px) scale(1.1); }
+          }
 
-            {/* RIGHT SIDE: Text Data and Badges Layout (12 out of 12 Columns) */}
-            <motion.div
-              className="text-center lg:col-span-12 flex flex-col justify-center items-center px-2 sm:px-0"
-              style={{ scale, opacity }}
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
+          /* Glassmorphism */
+          .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+          }
+
+          /* 3D Container */
+          .perspective-container {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+          }
+
+          .parallax-layer {
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+          }
+
+          /* Glows */
+          .glow-border {
+            position: relative;
+          }
+          .glow-border::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.5), transparent, rgba(6, 182, 212, 0.5));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+          }
+
+          .animated-float {
+            animation: gentle-float 6s ease-in-out infinite alternate;
+          }
+          .animated-float-delayed {
+            animation: gentle-float 8s ease-in-out infinite alternate-reverse;
+          }
+
+          @keyframes gentle-float {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-15px); }
+          }
+        `}</style>
+
+        {/* Background Elements */}
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+
+        <main className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 lg:py-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
+
+            {/* LEFT SIDE: 3D Visual Component */}
+            <div
+              id="visual-container"
+              className="perspective-container relative w-full h-[500px] lg:h-[600px] hidden lg:block"
+              ref={containerRef}
             >
-              {/* BADGE */}
-              <motion.div
-                variants={itemVariants}
-                className="inline-block mb-6 sm:mb-8"
+              <div
+                id="parallax-wrapper"
+                className="parallax-layer w-full h-full relative flex items-center justify-center"
+                ref={wrapperRef}
               >
-                <div className="glass px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm text-blue-300 border border-blue-400/30 backdrop-blur-md">
+
+                {/* Central Glass Pane */}
+                <div
+                  className="absolute w-[80%] h-[70%] glass rounded-3xl glow-border flex flex-col p-6 animated-float"
+                  style={{ transform: 'translateZ(0px)' }}
+                >
+                  {/* Mock Header */}
+                  <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                    <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
+                    <div className="w-48 h-4 bg-white/5 rounded mx-auto"></div>
+                  </div>
+
+                  {/* Mock Content Area */}
+                  <div className="flex-1 grid grid-cols-3 gap-4">
+                    <div className="col-span-1 space-y-3">
+                      <div className="h-20 w-full bg-white/5 rounded-xl border border-white/5"></div>
+                      <div className="h-20 w-full bg-blue-500/10 rounded-xl border border-blue-400/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]"></div>
+                      <div className="h-20 w-full bg-white/5 rounded-xl border border-white/5"></div>
+                    </div>
+                    <div className="col-span-2 bg-gradient-to-br from-white/5 to-transparent rounded-xl border border-white/5 p-4 flex flex-col gap-3">
+                      <div className="w-3/4 h-6 bg-white/10 rounded"></div>
+                      <div className="w-full h-3 bg-white/5 rounded mt-4"></div>
+                      <div className="w-full h-3 bg-white/5 rounded"></div>
+                      <div className="w-5/6 h-3 bg-white/5 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Foreground Element 1 (Kanban Card) */}
+                <div
+                  className="absolute bottom-10 right-0 w-64 glass rounded-2xl p-4 glow-border animated-float-delayed shadow-2xl shadow-blue-900/40"
+                  style={{ transform: 'translateZ(60px)' }}
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_8px_#60a5fa]"></div>
+                    <span className="text-xs font-semibold text-blue-300 uppercase tracking-wider">In Progress</span>
+                  </div>
+                  <div className="text-sm font-medium text-white mb-4">Design Hero Component</div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex -space-x-2">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-500 border border-black"></div>
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-400 to-pink-500 border border-black"></div>
+                    </div>
+                    <div className="text-xs text-gray-400">May 29</div>
+                  </div>
+                </div>
+
+                {/* Floating Foreground Element 2 (Note Widget) */}
+                <div
+                  className="absolute top-10 left-0 w-56 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 animated-float shadow-2xl"
+                  style={{ transform: 'translateZ(40px)' }}
+                >
+                  <div className="w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full mb-4"></div>
+                  <div className="space-y-2">
+                    <div className="h-2 w-full bg-white/20 rounded"></div>
+                    <div className="h-2 w-4/5 bg-white/10 rounded"></div>
+                    <div className="h-2 w-3/4 bg-white/10 rounded"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* RIGHT SIDE: Existing Content Text-Left Aligned */}
+            <div className="flex flex-col justify-center text-left z-10 lg:pl-10">
+              <div className="inline-block mb-6 self-start">
+                <div className="glass px-5 py-2 rounded-full text-sm text-blue-300 font-medium tracking-wide border-blue-400/30">
                   Collaborate • Organize • Flow
                 </div>
-              </motion.div>
+              </div>
 
-              {/* TITLE */}
-              <motion.div
-                variants={itemVariants}
-                className="mb-4 sm:mb-6 flex flex-col items-center lg:items-start select-none"
+              <h1
+                className="text-6xl sm:text-7xl font-black bg-gradient-to-b from-white via-blue-200 to-blue-400 bg-clip-text text-transparent leading-tight tracking-tighter mb-2"
               >
-                <h1 className="text-4xl xs:text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black bg-gradient-to-b from-white via-blue-200 to-blue-400 bg-clip-text text-transparent tracking-tighter leading-tight xs:leading-none">
-                  NOTES
-                </h1>
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="text-4xl xs:text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black bg-gradient-to-b from-blue-400 via-cyan-300 to-white bg-clip-text text-transparent tracking-tighter leading-tight xs:leading-none"
+                NOTES
+              </h1>
+              <div
+                className="text-6xl sm:text-7xl font-black bg-gradient-to-b from-blue-400 via-blue-300 to-cyan-300 bg-clip-text text-transparent leading-tight tracking-tighter mb-8"
+              >
+                FLOW
+              </div>
+
+              <p
+                className="text-lg text-gray-400 mb-10 max-w-md leading-relaxed"
+              >
+                The collaborative workspace platform built for teams. Combine workspace organization, task tracking, and persistent documents in one stunning interface.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                <button
+                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-105"
                 >
-                  FLOW
-                </motion.div>
-              </motion.div>
-
-              {/* DESCRIPTION */}
-              <motion.p
-                variants={itemVariants}
-                className="text-base sm:text-lg lg:text-xl text-gray-300 mb-8 sm:mb-10 max-w-2xl leading-relaxed px-2 sm:px-0"
-              >
-                The collaborative workspace platform built for modern teams.
-                Manage tasks, notes, and teamwork in one futuristic interface.
-              </motion.p>
-
-              {/* BUTTONS */}
-              <motion.div
-                variants={itemVariants}
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center mb-8 sm:mb-12 w-full px-2 sm:px-0"
-              >
-                <Link href="/auth/signup" className="w-full sm:w-auto">
-                  <button className="group w-full sm:w-auto justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 text-sm sm:text-base">
-                    Get Started
-                    <ArrowRight
-                      size={18}
-                      className="group-hover:translate-x-1 transition-transform hidden sm:block"
-                    />
-                  </button>
-                </Link>
-
-                <Link href="/auth/login" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto justify-center px-6 sm:px-8 py-3 sm:py-4 glass text-white rounded-xl font-semibold border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300 text-sm sm:text-base">
-                    Sign In
-                  </button>
-                </Link>
-              </motion.div>
-
-              {/* FEATURE TAGS */}
-              <motion.div
-                variants={itemVariants}
-                className="flex flex-wrap gap-2 sm:gap-4 justify-center w-full px-2 sm:px-0"
-              >
-                {[
-                  { icon: Zap, label: "Real-time" },
-                  { icon: Lock, label: "Secure" },
-                  { icon: Sparkles, label: "Premium UI" },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ y: -4, scale: 1.05 }}
-                    className="glass px-3 sm:px-4 py-2 rounded-lg border border-blue-400/20 text-xs sm:text-sm text-gray-300 flex items-center gap-2"
+                  Get Started
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <item.icon size={16} className="text-blue-400" />
-                    <span className="hidden xs:inline">{item.label}</span>
-                    <span className="xs:hidden">
-                      {item.label.substring(0, 3)}
-                    </span>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
+                    <path d="M5 12h14"></path>
+                    <path d="m12 5 7 7-7 7"></path>
+                  </svg>
+                </button>
+                <button
+                  className="px-8 py-4 glass text-white rounded-xl font-bold transition-all hover:bg-white/5 border border-white/10"
+                >
+                  Sign In
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </main>
       </section>
     </main>
   );

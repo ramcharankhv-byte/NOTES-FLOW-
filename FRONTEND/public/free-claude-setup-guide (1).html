@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Claude Code Setup — NVIDIA NIM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111418;
+    --surface2: #181c22;
+    --border: #1e2530;
+    --border2: #252d3a;
+    --text: #d4dce8;
+    --muted: #5a6a7e;
+    --accent: #00e5a0;
+    --accent2: #0099ff;
+    --accent3: #ff6b35;
+    --win: #0078d4;
+    --mac: #999999;
+    --code-bg: #0d1117;
+    --step-num: #1a2030;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    padding: 60px 24px 48px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% -10%, rgba(0,229,160,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 120%, rgba(0,153,255,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,229,160,0.08);
+    border: 1px solid rgba(0,229,160,0.2);
+    border-radius: 100px;
+    padding: 4px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+
+  .badge::before { content: '▶'; font-size: 9px; }
+
+  h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 14px;
+  }
+
+  h1 span.green { color: var(--accent); }
+  h1 span.blue  { color: var(--accent2); }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 400;
+    max-width: 480px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+
+  .installs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding: 32px 24px 0;
+    position: relative;
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--muted);
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+
+  .tab-btn:first-child { border-radius: 8px 0 0 0; border-right: none; }
+  .tab-btn:last-child  { border-radius: 0 8px 0 0; }
+
+  .tab-btn .os-icon { font-size: 18px; line-height: 1; }
+
+  .tab-btn.active-win {
+    background: rgba(0,120,212,0.12);
+    border-color: var(--win);
+    color: #60b8ff;
+    border-bottom-color: var(--surface);
+  }
+
+  .tab-btn.active-mac {
+    background: rgba(153,153,153,0.08);
+    border-color: #666;
+    color: #ccc;
+    border-bottom-color: var(--surface);
+  }
+
+  /* ── CONTENT ── */
+  .content-wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  .tab-content {
+    display: none;
+    border: 1px solid var(--border2);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    background: var(--surface);
+    padding: 40px 40px;
+  }
+
+  .tab-content.active { display: block; }
+
+  /* ── STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 28px; }
+
+  .step {
+    position: relative;
+    padding: 24px 24px 24px 72px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .step:hover { border-color: var(--border2); }
+
+  .step-num {
+    position: absolute;
+    left: 20px;
+    top: 22px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--step-num);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .step.highlight-green { border-color: rgba(0,229,160,0.2); }
+  .step.highlight-green .step-num { background: rgba(0,229,160,0.08); border-color: rgba(0,229,160,0.25); color: var(--accent); }
+
+  .step.highlight-blue { border-color: rgba(0,153,255,0.2); }
+  .step.highlight-blue .step-num { background: rgba(0,153,255,0.08); border-color: rgba(0,153,255,0.25); color: var(--accent2); }
+
+  .step.highlight-orange { border-color: rgba(255,107,53,0.2); }
+  .step.highlight-orange .step-num { background: rgba(255,107,53,0.08); border-color: rgba(255,107,53,0.25); color: var(--accent3); }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e8edf5;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .step-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.6;
+    font-family: 'Syne', sans-serif;
+    font-weight: 400;
+  }
+
+  /* ── ALERT BOXES ── */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .alert-warn {
+    background: rgba(255,107,53,0.07);
+    border: 1px solid rgba(255,107,53,0.2);
+    color: #ff9f78;
+  }
+
+  .alert-info {
+    background: rgba(0,153,255,0.07);
+    border: 1px solid rgba(0,153,255,0.2);
+    color: #6bbfff;
+  }
+
+  .alert-success {
+    background: rgba(0,229,160,0.07);
+    border: 1px solid rgba(0,229,160,0.2);
+    color: #5fdfb8;
+  }
+
+  .alert-icon { flex-shrink: 0; font-size: 14px; }
+
+  /* ── CODE BLOCKS ── */
+  .cmd-block {
+    position: relative;
+    background: var(--code-bg);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .cmd-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cmd-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+
+  .copy-btn:hover { background: rgba(0,229,160,0.08); color: var(--accent); border-color: rgba(0,229,160,0.2); }
+  .copy-btn.copied { background: rgba(0,229,160,0.1); color: var(--accent); border-color: rgba(0,229,160,0.3); }
+
+  .cmd-body {
+    padding: 14px 16px;
+    overflow-x: auto;
+  }
+
+  .cmd-body pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #a8d8a8;
+    white-space: pre;
+    line-height: 1.6;
+  }
+
+  .cmd-body pre .c  { color: var(--muted); } /* comment */
+  .cmd-body pre .k  { color: #79b8ff; }      /* keyword */
+  .cmd-body pre .v  { color: #ffab70; }      /* value/var */
+  .cmd-body pre .s  { color: #9ecbff; }      /* string */
+  .cmd-body pre .p  { color: var(--accent); } /* prompt $ */
+
+  .cmd-inline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border2);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #c9d1d9;
+  }
+
+  .sub-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 12px 0 6px;
+  }
+
+  /* ── VERIFY ROW ── */
+  .verify-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .verify-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .verify-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: rgba(0,229,160,0.05);
+    border: 1px solid rgba(0,229,160,0.15);
+    padding: 5px 12px;
+    border-radius: 5px;
+    color: var(--accent);
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0;
+  }
+
+  /* ── SECTION HEADING ── */
+  .section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── ERRORS TABLE ── */
+  .error-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .error-item {
+    padding: 14px 16px;
+    background: var(--code-bg);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+  }
+
+  .error-msg {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #ff8080;
+    margin-bottom: 8px;
+  }
+
+  .error-fix {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    margin-bottom: 8px;
+  }
+
+  /* ── TWO COL TERMINALS ── */
+  .terminal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .terminal-card {
+    background: var(--code-bg);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .terminal-card-header {
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  .t1 .terminal-card-header { color: var(--accent2); }
+  .t2 .terminal-card-header { color: var(--accent); }
+
+  .terminal-card pre {
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #a8d8a8;
+    line-height: 1.6;
+    white-space: pre;
+  }
+
+  /* ── LINK ── */
+  a { color: var(--accent2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  footer span { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .tab-content { padding: 24px 18px; }
+    .step { padding: 20px 16px 20px 60px; }
+    .terminal-grid { grid-template-columns: 1fr; }
+    .tab-btn { padding: 12px 20px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">FREE CLAUDE CODE SETUP GUIDE</div>
+  <h1><span class="green">Free Claude Code</span><br>with <span class="blue">NVIDIA NIM</span></h1>
+  <p class="subtitle">Run Claude Code locally for free using NVIDIA's NIM API bridge — no subscription needed.</p>
+  <div class="installs">
+    <span class="pill">UV</span>
+    <span class="pill">Python 3.14</span>
+    <span class="pill">NVIDIA NIM Bridge</span>
+    <span class="pill">Claude Code</span>
+    <span class="pill">Git</span>
+  </div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn active-win" onclick="switchTab('win', this)" id="btn-win">
+      <span class="os-icon">🪟</span> Windows
+    </button>
+    <button class="tab-btn" onclick="switchTab('mac', this)" id="btn-mac">
+      <span class="os-icon">🍎</span> macOS
+    </button>
+  </div>
+
+  <!-- ══════════════ WINDOWS TAB ══════════════ -->
+  <div class="tab-content active" id="tab-win">
+    <div class="section-title">// Windows — CMD &amp; PowerShell Setup</div>
+    <div class="steps">
+
+      <!-- STEP 1 -->
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Install Git</div>
+        <div class="step-desc">Download and install Git for Windows. After installation, close and reopen CMD.</div>
+        <div class="cmd-block">
+          <div class="cmd-header"><span class="cmd-label">Browser</span></div>
+          <div class="cmd-body"><pre>https://git-scm.com/download/win</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>git --version</span>
+            <button class="copy-btn" onclick="copyText('git --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Install UV (Python Package Manager)</div>
+        <div class="step-desc">Open CMD <strong>as Administrator</strong>, then run the command below. Close and reopen CMD after.</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD — Run as Administrator</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>uv --version</span>
+            <button class="copy-btn" onclick="copyText('uv --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Install Python 3.14 via UV</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>uv python install 3.14</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>python --version</span>
+            <button class="copy-btn" onclick="copyText('python --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Clone the NVIDIA NIM Project</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>cd %USERPROFILE%\Desktop
+git clone https://github.com/Alishahryar1/free-claude-code.git nvidia-nim
+cd nvidia-nim</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-title">Create .env File</div>
+        <div class="step-desc">Copy the example environment config file.</div>
+        <div class="sub-label">CMD</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>copy .env.example .env</pre></div>
+        </div>
+        <div class="sub-label">OR PowerShell</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">PowerShell</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>Copy-Item .env.example .env</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 6 — NVIDIA ACCOUNT (highlighted) -->
+      <div class="step highlight-orange">
+        <div class="step-num">06</div>
+        <div class="step-title">🔑 Create NVIDIA Account &amp; Get API Key</div>
+        <div class="step-desc">You need a free NVIDIA account to get your NIM API key.</div>
+        <div class="alert alert-warn">
+          <span class="alert-icon">⚠</span>
+          <span>This step is required. Without an API key, the server will not work.</span>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-header"><span class="cmd-label">Step 1 — Open in Browser</span></div>
+          <div class="cmd-body"><pre>https://build.nvidia.com/  →  Sign Up (free account)</pre></div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-header"><span class="cmd-label">Step 2 — Get API Key</span></div>
+          <div class="cmd-body"><pre>Profile → API Keys → Generate Key → Copy it</pre></div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Step 3 — Paste into .env file</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre><span class="c"># Open .env file in Notepad:</span>
+notepad .env
+
+<span class="c"># Find this line and paste your key:</span>
+<span class="v">NVIDIA_API_KEY</span>=<span class="s">your_nvidia_api_key_here</span></pre></div>
+        </div>
+        <div class="alert alert-success">
+          <span class="alert-icon">✓</span>
+          <span>Save and close Notepad after pasting your key.</span>
+        </div>
+      </div>
+
+      <!-- STEP 7 -->
+      <div class="step">
+        <div class="step-num">07</div>
+        <div class="step-title">Install Dependencies</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>uv sync</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 8 -->
+      <div class="step highlight-blue">
+        <div class="step-num">08</div>
+        <div class="step-title">Start NVIDIA NIM API Server</div>
+        <div class="alert alert-warn">
+          <span class="alert-icon">⚠</span>
+          <span>Keep this terminal window open always. Do NOT close it.</span>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD — Terminal 1</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>uv run uvicorn server:app --host 0.0.0.0 --port 8082</pre></div>
+        </div>
+        <div class="alert alert-success">
+          <span class="alert-icon">✓</span>
+          <span>You should see: <strong>Uvicorn running on http://0.0.0.0:8082</strong></span>
+        </div>
+      </div>
+
+      <!-- STEP 9 -->
+      <div class="step">
+        <div class="step-num">09</div>
+        <div class="step-title">Install Claude Code</div>
+        <div class="step-desc">Open a <strong>NEW CMD window</strong> for this step.</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD — New Window</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>curl -fsSL https://claude.ai/install.sh | bash</pre></div>
+        </div>
+        <div class="step-desc" style="margin-top:12px;">If you see <span class="cmd-inline">'bash' is not recognized</span>, use this instead:</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD — Git Bash Fallback</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>"C:\Program Files\Git\bin\bash.exe" -c "curl -fsSL https://claude.ai/install.sh | bash"</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>claude --version</span>
+            <button class="copy-btn" onclick="copyText('claude --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 10 -->
+      <div class="step highlight-green">
+        <div class="step-num">10</div>
+        <div class="step-title">🚀 Run Claude Code with NVIDIA NIM</div>
+        <div class="step-desc">Run these commands every time you want to start Claude.</div>
+        <div class="sub-label">CMD Version</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">CMD — Terminal 2</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre><span class="k">set</span> <span class="v">ANTHROPIC_AUTH_TOKEN</span>=<span class="s">freecc</span>
+<span class="k">set</span> <span class="v">ANTHROPIC_BASE_URL</span>=<span class="s">http://localhost:8082</span>
+claude</pre></div>
+        </div>
+        <div class="sub-label">PowerShell Version</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">PowerShell — Terminal 2</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre><span class="v">$env:ANTHROPIC_AUTH_TOKEN</span>=<span class="s">"freecc"</span>
+<span class="v">$env:ANTHROPIC_BASE_URL</span>=<span class="s">"http://localhost:8082"</span>
+claude</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 11 — WORKFLOW -->
+      <div class="step">
+        <div class="step-num">11</div>
+        <div class="step-title">Recommended Workflow (Every Session)</div>
+        <div class="terminal-grid">
+          <div class="terminal-card t1">
+            <div class="terminal-card-header">Terminal 1 — Keep Running</div>
+            <pre>uv run uvicorn server:app \
+  --host 0.0.0.0 \
+  --port 8082</pre>
+          </div>
+          <div class="terminal-card t2">
+            <div class="terminal-card-header">Terminal 2 — Claude</div>
+            <pre>set ANTHROPIC_AUTH_TOKEN=freecc
+set ANTHROPIC_BASE_URL=http://localhost:8082
+claude</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 12 — ONE-CLICK -->
+      <div class="step">
+        <div class="step-num">12</div>
+        <div class="step-title">Optional: One-Click Start File (.bat)</div>
+        <div class="step-desc">Create <span class="cmd-inline">start-claude.bat</span> inside the <span class="cmd-inline">nvidia-nim</span> folder and paste the content below.</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">start-claude.bat</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>@echo off
+start cmd /k "uv run uvicorn server:app --host 0.0.0.0 --port 8082"
+timeout /t 5
+set ANTHROPIC_AUTH_TOKEN=freecc
+set ANTHROPIC_BASE_URL=http://localhost:8082
+claude</pre></div>
+        </div>
+        <div class="alert alert-info">
+          <span class="alert-icon">ℹ</span>
+          <span>Double-click <strong>start-claude.bat</strong> to launch everything automatically.</span>
+        </div>
+      </div>
+
+      <!-- STEP 13 — ERRORS -->
+      <div class="step">
+        <div class="step-num">13</div>
+        <div class="step-title">Common Errors &amp; Fixes</div>
+        <div class="error-grid">
+          <div class="error-item">
+            <div class="error-msg">Error: 'uv' is not recognized</div>
+            <div class="error-fix">Restart CMD after installing UV.</div>
+          </div>
+          <div class="error-item">
+            <div class="error-msg">Error: 'claude' is not recognized</div>
+            <div class="error-fix">Restart terminal after Claude install.</div>
+          </div>
+          <div class="error-item">
+            <div class="error-msg">Error: Port 8082 already in use</div>
+            <div class="cmd-block" style="margin-bottom:6px;">
+              <div class="cmd-header">
+                <span class="cmd-label">Find PID</span>
+                <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+              </div>
+              <div class="cmd-body"><pre>netstat -ano | findstr :8082</pre></div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-header">
+                <span class="cmd-label">Kill Process</span>
+                <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+              </div>
+              <div class="cmd-body"><pre>taskkill /PID PID_NUMBER /F</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /steps -->
+  </div><!-- /tab-win -->
+
+  <!-- ══════════════ MACOS TAB ══════════════ -->
+  <div class="tab-content" id="tab-mac">
+    <div class="section-title">// macOS — Terminal Setup</div>
+    <div class="steps">
+
+      <!-- STEP 1 -->
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Install Homebrew</div>
+        <div class="step-desc">Open Terminal (⌘ + Space → "Terminal") and run:</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>brew --version</span>
+            <button class="copy-btn" onclick="copyText('brew --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Install Git</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>brew install git</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>git --version</span>
+            <button class="copy-btn" onclick="copyText('git --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Install UV</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>curl -LsSf https://astral.sh/uv/install.sh | sh</pre></div>
+        </div>
+        <div class="step-desc" style="margin-top:12px;">After installing, restart terminal OR run:</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>source $HOME/.cargo/env</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>uv --version</span>
+            <button class="copy-btn" onclick="copyText('uv --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Install Python 3.14 via UV</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>uv python install 3.14</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>python3 --version</span>
+            <button class="copy-btn" onclick="copyText('python3 --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-title">Clone NVIDIA NIM Project</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>cd ~/Desktop
+git clone https://github.com/Alishahryar1/free-claude-code.git nvidia-nim
+cd nvidia-nim</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="step">
+        <div class="step-num">06</div>
+        <div class="step-title">Create .env File</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>cp .env.example .env</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 7 — NVIDIA ACCOUNT (highlighted) -->
+      <div class="step highlight-orange">
+        <div class="step-num">07</div>
+        <div class="step-title">🔑 Create NVIDIA Account &amp; Get API Key</div>
+        <div class="step-desc">You need a free NVIDIA account to get your NIM API key.</div>
+        <div class="alert alert-warn">
+          <span class="alert-icon">⚠</span>
+          <span>This step is required. Without an API key, the server will not work.</span>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-header"><span class="cmd-label">Step 1 — Open in Browser</span></div>
+          <div class="cmd-body"><pre>https://build.nvidia.com/  →  Sign Up (free account)</pre></div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-header"><span class="cmd-label">Step 2 — Get API Key</span></div>
+          <div class="cmd-body"><pre>Profile → API Keys → Generate Key → Copy it</pre></div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Step 3 — Paste into .env file</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre><span class="c"># Open .env file in nano:</span>
+nano .env
+
+<span class="c"># Find this line and paste your key:</span>
+<span class="v">NVIDIA_API_KEY</span>=<span class="s">your_nvidia_api_key_here</span>
+
+<span class="c"># Save: CTRL+O → Enter → CTRL+X</span></pre></div>
+        </div>
+        <div class="alert alert-success">
+          <span class="alert-icon">✓</span>
+          <span>Press <strong>CTRL+O → Enter → CTRL+X</strong> to save and exit nano.</span>
+        </div>
+      </div>
+
+      <!-- STEP 8 -->
+      <div class="step">
+        <div class="step-num">08</div>
+        <div class="step-title">Install Dependencies</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>uv sync</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 9 -->
+      <div class="step highlight-blue">
+        <div class="step-num">09</div>
+        <div class="step-title">Start NVIDIA NIM API Server</div>
+        <div class="alert alert-warn">
+          <span class="alert-icon">⚠</span>
+          <span>Keep this terminal window open always. Do NOT close it.</span>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal 1 — Keep Running</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>uv run uvicorn server:app --host 0.0.0.0 --port 8082</pre></div>
+        </div>
+        <div class="alert alert-success">
+          <span class="alert-icon">✓</span>
+          <span>You should see: <strong>Uvicorn running on http://0.0.0.0:8082</strong></span>
+        </div>
+      </div>
+
+      <!-- STEP 10 -->
+      <div class="step">
+        <div class="step-num">10</div>
+        <div class="step-title">Install Claude Code</div>
+        <div class="step-desc">Open a <strong>NEW Terminal window</strong> (⌘+T or new tab).</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal — New Window</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>curl -fsSL https://claude.ai/install.sh | bash</pre></div>
+        </div>
+        <div class="verify-row">
+          <span class="verify-label">✓ verify</span>
+          <div class="verify-code">
+            <span>claude --version</span>
+            <button class="copy-btn" onclick="copyText('claude --version', this)">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 11 -->
+      <div class="step highlight-green">
+        <div class="step-num">11</div>
+        <div class="step-title">🚀 Run Claude Code with NVIDIA NIM</div>
+        <div class="step-desc">Run this command every time you want to start Claude.</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal 2</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre><span class="v">ANTHROPIC_AUTH_TOKEN</span>=<span class="s">"freecc"</span> <span class="v">ANTHROPIC_BASE_URL</span>=<span class="s">"http://localhost:8082"</span> claude</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 12 — WORKFLOW -->
+      <div class="step">
+        <div class="step-num">12</div>
+        <div class="step-title">Recommended Workflow (Every Session)</div>
+        <div class="terminal-grid">
+          <div class="terminal-card t1">
+            <div class="terminal-card-header">Terminal 1 — Keep Running</div>
+            <pre>cd ~/Desktop/nvidia-nim
+uv run uvicorn server:app \
+  --host 0.0.0.0 \
+  --port 8082</pre>
+          </div>
+          <div class="terminal-card t2">
+            <div class="terminal-card-header">Terminal 2 — Claude</div>
+            <pre>ANTHROPIC_AUTH_TOKEN="freecc" \
+ANTHROPIC_BASE_URL="http://localhost:8082" \
+claude</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 13 — ONE-CLICK SCRIPT -->
+      <div class="step">
+        <div class="step-num">13</div>
+        <div class="step-title">Optional: One-Click Start Script</div>
+        <div class="step-desc">Create the script file:</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>nano ~/Desktop/nvidia-nim/start-claude.sh</pre></div>
+        </div>
+        <div class="step-desc" style="margin-top:10px;">Paste this content:</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">start-claude.sh</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>#!/bin/bash
+cd ~/Desktop/nvidia-nim
+uv run uvicorn server:app --host 0.0.0.0 --port 8082 &
+sleep 5
+ANTHROPIC_AUTH_TOKEN="freecc" \
+ANTHROPIC_BASE_URL="http://localhost:8082" \
+claude</pre></div>
+        </div>
+        <div class="step-desc" style="margin-top:10px;">Save: <span class="cmd-inline">CTRL+O</span> → <span class="cmd-inline">Enter</span> → <span class="cmd-inline">CTRL+X</span>, then make it executable:</div>
+        <div class="cmd-block">
+          <div class="cmd-header">
+            <span class="cmd-label">Terminal</span>
+            <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+          </div>
+          <div class="cmd-body"><pre>chmod +x ~/Desktop/nvidia-nim/start-claude.sh
+./start-claude.sh</pre></div>
+        </div>
+      </div>
+
+      <!-- STEP 14 — ERRORS -->
+      <div class="step">
+        <div class="step-num">14</div>
+        <div class="step-title">Common Errors &amp; Fixes</div>
+        <div class="error-grid">
+          <div class="error-item">
+            <div class="error-msg">Error: uv: command not found</div>
+            <div class="error-fix">Run the source command below:</div>
+            <div class="cmd-block" style="margin-top:8px;">
+              <div class="cmd-header">
+                <span class="cmd-label">Terminal</span>
+                <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+              </div>
+              <div class="cmd-body"><pre>source $HOME/.cargo/env</pre></div>
+            </div>
+          </div>
+          <div class="error-item">
+            <div class="error-msg">Error: claude: command not found</div>
+            <div class="error-fix">Restart terminal after Claude install, then try again.</div>
+          </div>
+          <div class="error-item">
+            <div class="error-msg">Error: Port 8082 already in use</div>
+            <div class="cmd-block" style="margin-bottom:6px;">
+              <div class="cmd-header">
+                <span class="cmd-label">Find PID</span>
+                <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+              </div>
+              <div class="cmd-body"><pre>lsof -i :8082</pre></div>
+            </div>
+            <div class="cmd-block">
+              <div class="cmd-header">
+                <span class="cmd-label">Kill Process</span>
+                <button class="copy-btn" onclick="copyBlock(this)">copy</button>
+              </div>
+              <div class="cmd-body"><pre>kill -9 PID_NUMBER</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /steps -->
+  </div><!-- /tab-mac -->
+
+</div><!-- /content-wrap -->
+
+<footer>
+  Built for <span>@Ai-with-Rajpalsinh</span> &nbsp;·&nbsp; Free Claude Code via NVIDIA NIM &nbsp;·&nbsp; Open Source
+</footer>
+
+<script>
+  function switchTab(os, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-win', 'active-mac'));
+    document.getElementById('tab-' + os).classList.add('active');
+    btn.classList.add('active-' + os);
+  }
+
+  function copyBlock(btn) {
+    const block = btn.closest('.cmd-block');
+    const pre = block.querySelector('pre');
+    const text = pre.innerText || pre.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      btn.textContent = '✓ copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+</script>
+
+</body>
+</html>
