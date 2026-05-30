@@ -14,12 +14,8 @@ export const metadata: Metadata = {
     "Experience the future of note-taking with 3D animations and AI-powered features",
   generator: "v0.app",
   icons: {
-    icon: [
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
+    icon: "/icon.svg",
+    apple: "/apple-icon.png",
   },
 };
 
