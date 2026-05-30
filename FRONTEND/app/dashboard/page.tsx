@@ -104,7 +104,7 @@ export default function DashboardPage() {
             </span>
             <button
               onClick={handleLogout}
-              className="p-2 text-gray-400 hover:text-white hover:bg-blue-600/20 rounded-lg transition-colors"
+              className="p-2 text-gray-400 hover:text-white hover:bg-blue-600/20 rounded-lg transition-colors cursor-pointer"
               title="Logout"
             >
               <LogOut size={18} />
@@ -158,7 +158,7 @@ export default function DashboardPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsCreateModalOpen(true)}
-            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-all hover:shadow-lg hover:shadow-blue-600/50 text-sm sm:text-base"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-all hover:shadow-lg hover:shadow-blue-600/50 text-sm sm:text-base cursor-pointer"
           >
             <Plus size={18} />
             <span>Create Workspace</span>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                   exit={{ opacity: 0, y: -20 }}
                   whileHover={{ y: -8, scale: 1.02 }}
                   onClick={() => handleSelectWorkspace(workspace.id)}
-                  className="glass rounded-xl p-4 sm:p-6 cursor-pointer group border border-blue-400/20 hover:border-blue-400/60 transition-all"
+                  className="glass rounded-xl p-4 sm:p-6 cursor-pointer group border border-blue-400/20 hover:border-blue-400/60 transition-all active:scale-95"
                 >
                   {/* Icon */}
                   <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-600/30 to-cyan-600/20 rounded-lg w-fit mb-3 sm:mb-4 group-hover:from-blue-600/50 group-hover:to-cyan-600/40 transition-all">
@@ -237,7 +237,7 @@ export default function DashboardPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="px-4 sm:px-6 py-2 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center gap-2 mx-auto transition-all text-sm sm:text-base"
+                    className="px-4 sm:px-6 py-2 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center gap-2 mx-auto transition-all text-sm sm:text-base cursor-pointer"
                   >
                     <Plus size={18} />
                     Create Workspace

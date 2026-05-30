@@ -109,8 +109,8 @@ export default function WorkspacePage() {
   }
 
   const sidebarVariants = {
-    open: { x: 0, opacity: 1 },
-    closed: { x: -256, opacity: 0, pointerEvents: "none" },
+    open: { x: 0, opacity: 1, pointerEvents: "auto" as const },
+    closed: { x: -256, opacity: 0, pointerEvents: "none" as const },
   };
 
   const navigationItems = [
@@ -184,7 +184,7 @@ export default function WorkspacePage() {
                     }
                   }}
                   whileHover={{ x: 4 }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${
                     activeTab === item.id
                       ? "bg-blue-600/20 text-blue-400 border border-blue-400/30"
                       : "text-gray-400 hover:text-white hover:bg-blue-600/10"
@@ -215,7 +215,7 @@ export default function WorkspacePage() {
               onClick={handleLogout}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white hover:bg-red-600/10 rounded-lg transition-colors"
+              className="w-full flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white hover:bg-red-600/10 rounded-lg transition-colors cursor-pointer"
             >
               <LogOut size={16} />
               <span className="text-sm font-medium">Logout</span>
