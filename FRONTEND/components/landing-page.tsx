@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 export function LandingPage() {
   const containerRef = useRef(null);
@@ -117,6 +118,11 @@ export function LandingPage() {
             0% { transform: translateY(0px); }
             100% { transform: translateY(-15px); }
           }
+
+          /* Button hover effects for better UX */
+          button {
+            cursor: pointer;
+          }
         `}</style>
 
         {/* Background Elements */}
@@ -229,30 +235,36 @@ export function LandingPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 items-start">
-                <button
-                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-105"
-                >
-                  Get Started
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                <Link href="/auth/signup" passHref prefetch>
+                  <button
+                    className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-105"
+                    type="button"
                   >
-                    <path d="M5 12h14"></path>
-                    <path d="m12 5 7 7-7 7"></path>
-                  </svg>
-                </button>
-                <button
-                  className="px-8 py-4 glass text-white rounded-xl font-bold transition-all hover:bg-white/5 border border-white/10"
-                >
-                  Sign In
-                </button>
+                    Get Started
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 12h14"></path>
+                      <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                  </button>
+                </Link>
+                <Link href="/auth/login" passHref prefetch>
+                  <button
+                    className="px-8 py-4 glass text-white rounded-xl font-bold transition-all hover:bg-white/5 border border-white/10"
+                    type="button"
+                  >
+                    Sign In
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
