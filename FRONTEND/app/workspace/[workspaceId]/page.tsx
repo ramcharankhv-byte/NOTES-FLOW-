@@ -39,9 +39,21 @@ export default function WorkspacePage() {
   const { fetchTasks } = useTasksStore();
   const [activeTab, setActiveTab] = useState<Tab>("notes");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const router = useRouter();
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
+
+  // Detect desktop screen size
+  useEffect(() => {
+    const checkIsDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+
+    checkIsDesktop();
+    window.addEventListener("resize", checkIsDesktop);
+    return () => window.removeEventListener("resize", checkIsDesktop);
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -130,7 +142,7 @@ export default function WorkspacePage() {
         {/* Sidebar */}
         <motion.aside
           initial="closed"
-          animate={isSidebarOpen ? "open" : "closed"}
+          animate={isDesktop ? "open" : isSidebarOpen ? "open" : "closed"}
           variants={sidebarVariants}
           className="fixed lg:relative w-64 h-screen border-r border-blue-400/10 bg-black/80 backdrop-blur-sm flex flex-col z-50 lg:z-10"
         >
@@ -164,7 +176,13 @@ export default function WorkspacePage() {
               return (
                 <motion.button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id as Tab)}
+                  onClick={() => {
+                    setActiveTab(item.id as Tab);
+                    // Close sidebar on mobile after selecting tab
+                    if (!isDesktop) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
                   whileHover={{ x: 4 }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                     activeTab === item.id
