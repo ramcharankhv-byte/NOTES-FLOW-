@@ -1,9 +1,14 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useAuthStore, useWorkspaceStore, useNotesStore, useTasksStore } from '@/lib/store'
-import { useRouter, useParams } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useState } from "react";
+import {
+  useAuthStore,
+  useWorkspaceStore,
+  useNotesStore,
+  useTasksStore,
+} from "@/lib/store";
+import { useRouter, useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
   Trello,
@@ -12,79 +17,95 @@ import {
   Menu,
   LogOut,
   Users,
-} from 'lucide-react'
-import Link from 'next/link'
-import { NotesGrid } from '@/components/notes-grid'
-import { TasksBoard } from '@/components/tasks-board'
-import { MembersPanel } from '@/components/members-panel'
+} from "lucide-react";
+import Link from "next/link";
+import { NotesGrid } from "@/components/notes-grid";
+import { TasksBoard } from "@/components/tasks-board";
+import { MembersPanel } from "@/components/members-panel";
 
-type Tab = 'notes' | 'tasks' | 'settings'
+type Tab = "notes" | "tasks" | "settings";
 
 export default function WorkspacePage() {
-  const { user, isAuthenticated, logout } = useAuthStore()
-  const { workspaces, currentWorkspace, selectWorkspace, deleteWorkspace, leaveWorkspace, fetchWorkspaces } = useWorkspaceStore()
-  const { fetchNotes } = useNotesStore()
-  const { fetchTasks } = useTasksStore()
-  const [activeTab, setActiveTab] = useState<Tab>('notes')
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const router = useRouter()
-  const params = useParams()
-  const workspaceId = params?.workspaceId as string
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const {
+    workspaces,
+    currentWorkspace,
+    selectWorkspace,
+    deleteWorkspace,
+    leaveWorkspace,
+    fetchWorkspaces,
+  } = useWorkspaceStore();
+  const { fetchNotes } = useNotesStore();
+  const { fetchTasks } = useTasksStore();
+  const [activeTab, setActiveTab] = useState<Tab>("notes");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const workspaceId = params?.workspaceId as string;
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/auth/login')
-      return
+      router.push("/auth/login");
+      return;
     }
 
     if (workspaceId) {
       if (workspaces.length === 0) {
         fetchWorkspaces().then(() => {
-          selectWorkspace(workspaceId)
-          fetchNotes(workspaceId)
-          fetchTasks(workspaceId)
-        })
+          selectWorkspace(workspaceId);
+          fetchNotes(workspaceId);
+          fetchTasks(workspaceId);
+        });
       } else {
-        selectWorkspace(workspaceId)
-        fetchNotes(workspaceId)
-        fetchTasks(workspaceId)
+        selectWorkspace(workspaceId);
+        fetchNotes(workspaceId);
+        fetchTasks(workspaceId);
       }
     }
-  }, [isAuthenticated, workspaceId, router, workspaces.length, fetchWorkspaces, selectWorkspace, fetchNotes, fetchTasks])
+  }, [
+    isAuthenticated,
+    workspaceId,
+    router,
+    workspaces.length,
+    fetchWorkspaces,
+    selectWorkspace,
+    fetchNotes,
+    fetchTasks,
+  ]);
 
   const handleLogout = () => {
-    logout()
-    router.push('/')
-  }
+    logout();
+    router.push("/");
+  };
 
   const handleDeleteWorkspace = async () => {
     if (confirm("Are you sure you want to delete this workspace?")) {
       await deleteWorkspace(workspaceId);
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   };
 
   const handleLeaveWorkspace = async () => {
     if (confirm("Are you sure you want to leave this workspace?")) {
       await leaveWorkspace(workspaceId);
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   };
 
   if (!isAuthenticated || !currentWorkspace) {
-    return null
+    return null;
   }
 
   const sidebarVariants = {
     open: { x: 0, opacity: 1 },
-    closed: { x: -256, opacity: 0 },
-  }
+    closed: { x: -256, opacity: 0, pointerEvents: "none" },
+  };
 
   const navigationItems = [
-    { id: 'notes', label: 'Notes', icon: BookOpen },
-    { id: 'tasks', label: 'Tasks', icon: Trello },
-    { id: 'settings', label: 'Settings', icon: Settings },
-  ] as const
+    { id: "notes", label: "Notes", icon: BookOpen },
+    { id: "tasks", label: "Tasks", icon: Trello },
+    { id: "settings", label: "Settings", icon: Settings },
+  ] as const;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0a0a] to-black">
@@ -95,18 +116,32 @@ export default function WorkspacePage() {
       </div>
 
       <div className="relative z-10 flex h-screen">
+        {/* Mobile Overlay */}
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          />
+        )}
+
         {/* Sidebar */}
         <motion.aside
-          initial="open"
-          animate={isSidebarOpen ? 'open' : 'closed'}
+          initial="closed"
+          animate={isSidebarOpen ? "open" : "closed"}
           variants={sidebarVariants}
-          className="w-64 border-r border-blue-400/10 bg-black/40 backdrop-blur-sm flex flex-col"
+          className="fixed lg:relative w-64 h-screen border-r border-blue-400/10 bg-black/80 backdrop-blur-sm flex flex-col z-50 lg:z-10"
         >
           {/* Logo */}
           <div className="p-6 border-b border-blue-400/10">
             <Link href="/dashboard" className="flex items-center gap-2">
               <h2 className="text-xl font-black text-white">
-                Notes<span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Flow</span>
+                Notes
+                <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+                  Flow
+                </span>
               </h2>
             </Link>
           </div>
@@ -114,14 +149,18 @@ export default function WorkspacePage() {
           {/* Workspace Info */}
           <div className="p-6 border-b border-blue-400/10">
             <p className="text-xs text-gray-500 mb-2">CURRENT WORKSPACE</p>
-            <h3 className="text-white font-bold text-lg truncate">{currentWorkspace.name}</h3>
-            <p className="text-xs text-gray-400 mt-1">{currentWorkspace.members.length} members</p>
+            <h3 className="text-white font-bold text-lg truncate">
+              {currentWorkspace.name}
+            </h3>
+            <p className="text-xs text-gray-400 mt-1">
+              {currentWorkspace.members.length} members
+            </p>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 p-6 space-y-2">
             {navigationItems.map((item) => {
-              const Icon = item.icon
+              const Icon = item.icon;
               return (
                 <motion.button
                   key={item.id}
@@ -129,14 +168,14 @@ export default function WorkspacePage() {
                   whileHover={{ x: 4 }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                     activeTab === item.id
-                      ? 'bg-blue-600/20 text-blue-400 border border-blue-400/30'
-                      : 'text-gray-400 hover:text-white hover:bg-blue-600/10'
+                      ? "bg-blue-600/20 text-blue-400 border border-blue-400/30"
+                      : "text-gray-400 hover:text-white hover:bg-blue-600/10"
                   }`}
                 >
                   <Icon size={18} />
                   <span className="font-medium">{item.label}</span>
                 </motion.button>
-              )
+              );
             })}
           </nav>
 
@@ -147,7 +186,9 @@ export default function WorkspacePage() {
                 {user?.username?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{user?.username}</p>
+                <p className="text-sm font-medium text-white truncate">
+                  {user?.username}
+                </p>
                 <p className="text-xs text-gray-400 truncate">{user?.email}</p>
               </div>
             </div>
@@ -167,105 +208,128 @@ export default function WorkspacePage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Top Bar */}
-          <div className="border-b border-blue-400/10 bg-black/40 backdrop-blur-sm p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="border-b border-blue-400/10 bg-black/40 backdrop-blur-sm p-3 sm:p-4 flex items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <motion.button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 text-gray-400 hover:text-white hover:bg-blue-600/20 rounded-lg transition-colors lg:hidden"
+                className="p-2 text-gray-400 hover:text-white hover:bg-blue-600/20 rounded-lg transition-colors lg:hidden flex-shrink-0"
               >
                 <Menu size={20} />
               </motion.button>
 
-              <Link href="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-                <ChevronLeft size={18} />
-                <span className="text-sm">Back to Workspaces</span>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1 sm:gap-2 text-gray-400 hover:text-white transition-colors min-w-0"
+              >
+                <ChevronLeft size={18} className="flex-shrink-0" />
+                <span className="text-xs sm:text-sm truncate">Back</span>
               </Link>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</span>
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              <span className="text-xs sm:text-sm text-gray-400">
+                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+              </span>
             </div>
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 overflow-auto p-8">
+          <div className="flex-1 overflow-auto p-3 sm:p-6 lg:p-8">
             <AnimatePresence mode="wait">
-              {activeTab === 'notes' && (
+              {activeTab === "notes" && (
                 <motion.div
                   key="notes"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.2 }}
-                  className="space-y-6"
+                  className="space-y-4 sm:space-y-6"
                 >
-                  <h2 className="text-3xl font-bold text-white">Notes</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                    Notes
+                  </h2>
                   <NotesGrid workspaceId={workspaceId} />
                 </motion.div>
               )}
 
-              {activeTab === 'tasks' && (
+              {activeTab === "tasks" && (
                 <motion.div
                   key="tasks"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.2 }}
-                  className="space-y-6"
+                  className="space-y-4 sm:space-y-6"
                 >
-                  <h2 className="text-3xl font-bold text-white">Kanban Board</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                    Kanban Board
+                  </h2>
                   <TasksBoard workspaceId={workspaceId} />
                 </motion.div>
               )}
 
-              {activeTab === 'settings' && (
+              {activeTab === "settings" && (
                 <motion.div
                   key="settings"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.2 }}
-                  className="space-y-8 max-w-3xl"
+                  className="space-y-6 sm:space-y-8 max-w-3xl"
                 >
-                  <h2 className="text-3xl font-bold text-white">Workspace Settings</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                    Workspace Settings
+                  </h2>
 
                   {/* Members Section */}
-                  <div className="glass rounded-xl p-6 border border-blue-400/20 space-y-4">
+                  <div className="glass rounded-xl p-4 sm:p-6 border border-blue-400/20 space-y-4">
                     <MembersPanel
                       members={currentWorkspace.members}
                       currentUserId={user.id}
                       workspaceOwnerId={currentWorkspace.owner.id}
                       isOwner={currentWorkspace.owner.id === user.id}
                       onAddMember={async (email) => {
-                        await useWorkspaceStore.getState().addMember(workspaceId, email)
+                        await useWorkspaceStore
+                          .getState()
+                          .addMember(workspaceId, email);
                       }}
                       onRemoveMember={async (memberId) => {
-                        await useWorkspaceStore.getState().removeMember(workspaceId, memberId)
+                        await useWorkspaceStore
+                          .getState()
+                          .removeMember(workspaceId, memberId);
                       }}
                     />
                   </div>
 
                   {/* Workspace Info */}
                   <div className="glass rounded-xl p-6 border border-blue-400/20 space-y-4">
-                    <h3 className="text-lg font-bold text-white">Workspace Information</h3>
+                    <h3 className="text-lg font-bold text-white">
+                      Workspace Information
+                    </h3>
                     <div className="space-y-4">
                       <div>
                         <p className="text-sm text-gray-400 mb-1">Name</p>
-                        <p className="text-white font-medium">{currentWorkspace.name}</p>
+                        <p className="text-white font-medium">
+                          {currentWorkspace.name}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-400 mb-1">Owner</p>
-                        <p className="text-white font-medium">{currentWorkspace.owner.username}</p>
+                        <p className="text-white font-medium">
+                          {currentWorkspace.owner.username}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-400 mb-1">Created</p>
                         <p className="text-white font-medium">
-                          {new Date(currentWorkspace.createdAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
+                          {new Date(
+                            currentWorkspace.createdAt,
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
                           })}
                         </p>
                       </div>
@@ -274,10 +338,15 @@ export default function WorkspacePage() {
 
                   {/* Danger Zone */}
                   <div className="glass rounded-xl p-6 border border-red-400/20 space-y-4">
-                    <h3 className="text-lg font-bold text-red-400">Danger Zone</h3>
+                    <h3 className="text-lg font-bold text-red-400">
+                      Danger Zone
+                    </h3>
                     {currentWorkspace.owner.id === user.id ? (
                       <>
-                        <p className="text-sm text-gray-400">Once you delete this workspace, there is no going back. Please be certain.</p>
+                        <p className="text-sm text-gray-400">
+                          Once you delete this workspace, there is no going
+                          back. Please be certain.
+                        </p>
                         <motion.button
                           onClick={handleDeleteWorkspace}
                           whileHover={{ scale: 1.02 }}
@@ -289,7 +358,10 @@ export default function WorkspacePage() {
                       </>
                     ) : (
                       <>
-                        <p className="text-sm text-gray-400">You will no longer have access to this workspace once you leave.</p>
+                        <p className="text-sm text-gray-400">
+                          You will no longer have access to this workspace once
+                          you leave.
+                        </p>
                         <motion.button
                           onClick={handleLeaveWorkspace}
                           whileHover={{ scale: 1.02 }}
@@ -308,5 +380,5 @@ export default function WorkspacePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

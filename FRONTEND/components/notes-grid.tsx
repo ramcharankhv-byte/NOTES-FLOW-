@@ -1,69 +1,86 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useNotesStore, Note } from '@/lib/store'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Trash2, Edit2, X } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { useNotesStore, Note } from "@/lib/store";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Plus, Trash2, Edit2, X } from "lucide-react";
 
 interface NotesGridProps {
-  workspaceId: string
+  workspaceId: string;
 }
 
 export function NotesGrid({ workspaceId }: NotesGridProps) {
-  const { notes, currentNote, selectNote, createNote, updateNote, deleteNote, searchNotes, fetchNotes } = useNotesStore()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [newNoteTitle, setNewNoteTitle] = useState('')
-  const [newNoteContent, setNewNoteContent] = useState('')
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+  const {
+    notes,
+    currentNote,
+    selectNote,
+    createNote,
+    updateNote,
+    deleteNote,
+    searchNotes,
+    fetchNotes,
+  } = useNotesStore();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newNoteTitle, setNewNoteTitle] = useState("");
+  const [newNoteContent, setNewNoteContent] = useState("");
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchNotes(workspaceId)
-  }, [workspaceId, fetchNotes])
+    fetchNotes(workspaceId);
+  }, [workspaceId, fetchNotes]);
 
   const handleSearch = async (query: string) => {
-    setSearchQuery(query)
+    setSearchQuery(query);
     if (query.trim()) {
-      await searchNotes(workspaceId, query)
+      await searchNotes(workspaceId, query);
     }
-  }
+  };
 
   const handleCreateNote = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newNoteTitle.trim()) return
+    e.preventDefault();
+    if (!newNoteTitle.trim()) return;
 
-    await createNote(workspaceId, newNoteTitle, newNoteContent)
-    setNewNoteTitle('')
-    setNewNoteContent('')
-    setIsCreateModalOpen(false)
-  }
+    await createNote(workspaceId, newNoteTitle, newNoteContent);
+    setNewNoteTitle("");
+    setNewNoteContent("");
+    setIsCreateModalOpen(false);
+  };
 
-  const handleUpdateNote = async (noteId: string, title: string, content: string) => {
-    await updateNote(noteId, title, content)
-    setEditingNoteId(null)
-  }
+  const handleUpdateNote = async (
+    noteId: string,
+    title: string,
+    content: string,
+  ) => {
+    await updateNote(noteId, title, content);
+    setEditingNoteId(null);
+  };
 
   const handleDeleteNote = async (noteId: string) => {
-    await deleteNote(noteId)
-  }
+    await deleteNote(noteId);
+  };
 
-  const filteredNotes = notes.filter(note =>
-    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    note.content.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredNotes = notes.filter(
+    (note) =>
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.content.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex-1 relative min-w-0">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Search notes..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-black/50 border border-blue-400/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 transition-all"
+            className="w-full pl-10 pr-4 py-2 sm:py-3 bg-black/50 border border-blue-400/20 rounded-lg text-white placeholder-gray-500 text-sm sm:text-base focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 transition-all"
           />
         </div>
 
@@ -71,17 +88,17 @@ export function NotesGrid({ workspaceId }: NotesGridProps) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center gap-2 transition-all hover:shadow-lg hover:shadow-blue-600/50 whitespace-nowrap"
+          className="w-full sm:w-auto px-4 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-all hover:shadow-lg hover:shadow-blue-600/50 text-sm sm:text-base"
         >
           <Plus size={18} />
-          New Note
+          <span>New Note</span>
         </motion.button>
       </div>
 
       {/* Notes Grid */}
       <motion.div
         layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
       >
         <AnimatePresence>
           {filteredNotes.length > 0 ? (
@@ -94,45 +111,45 @@ export function NotesGrid({ workspaceId }: NotesGridProps) {
                 exit={{ opacity: 0, scale: 0.9 }}
                 whileHover={{ y: -4, scale: 1.02 }}
                 onClick={() => selectNote(note.id)}
-                className="group glass rounded-lg p-5 cursor-pointer border border-blue-400/20 hover:border-blue-400/60 transition-all min-h-[200px] flex flex-col"
+                className="group glass rounded-lg p-4 sm:p-5 cursor-pointer border border-blue-400/20 hover:border-blue-400/60 transition-all min-h-[180px] sm:min-h-[200px] flex flex-col"
               >
                 {/* Title */}
-                <h3 className="text-white font-bold text-lg mb-2 line-clamp-2 group-hover:text-blue-300 transition-colors">
+                <h3 className="text-white font-bold text-base sm:text-lg mb-2 line-clamp-2 group-hover:text-blue-300 transition-colors">
                   {note.title}
                 </h3>
 
                 {/* Content Preview */}
-                <p className="text-gray-400 text-sm flex-1 line-clamp-3 mb-4">
-                  {note.content.replace(/^#+\s+/gm, '').substring(0, 100)}...
+                <p className="text-gray-400 text-xs sm:text-sm flex-1 line-clamp-3 mb-3 sm:mb-4">
+                  {note.content.replace(/^#+\s+/gm, "").substring(0, 100)}...
                 </p>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-blue-400/10">
+                <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-blue-400/10">
                   <span className="text-xs text-gray-500">
                     {new Date(note.updatedAt).toLocaleDateString()}
                   </span>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <motion.button
                       onClick={(e) => {
-                        e.stopPropagation()
-                        setEditingNoteId(note.id)
+                        e.stopPropagation();
+                        setEditingNoteId(note.id);
                       }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-600/20 rounded transition-colors"
+                      className="p-1 sm:p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-600/20 rounded transition-colors"
                     >
                       <Edit2 size={14} />
                     </motion.button>
                     <motion.button
                       onClick={(e) => {
-                        e.stopPropagation()
-                        handleDeleteNote(note.id)
+                        e.stopPropagation();
+                        handleDeleteNote(note.id);
                       }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded transition-colors"
+                      className="p-1 sm:p-2 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded transition-colors"
                     >
                       <Trash2 size={14} />
                     </motion.button>
@@ -144,10 +161,12 @@ export function NotesGrid({ workspaceId }: NotesGridProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="col-span-full glass rounded-lg p-12 text-center border border-blue-400/10"
+              className="col-span-full glass rounded-lg p-8 sm:p-12 text-center border border-blue-400/10"
             >
-              <p className="text-gray-400 mb-6">
-                {searchQuery ? 'No notes found' : 'No notes yet. Create your first note to get started!'}
+              <p className="text-gray-400 mb-6 text-sm sm:text-base">
+                {searchQuery
+                  ? "No notes found"
+                  : "No notes yet. Create your first note to get started!"}
               </p>
               {!searchQuery && (
                 <motion.button
@@ -199,7 +218,9 @@ export function NotesGrid({ workspaceId }: NotesGridProps) {
                 <form onSubmit={handleCreateNote} className="space-y-4">
                   {/* Title Input */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Title
+                    </label>
                     <input
                       type="text"
                       value={newNoteTitle}
@@ -212,7 +233,9 @@ export function NotesGrid({ workspaceId }: NotesGridProps) {
 
                   {/* Content Editor */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Content</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Content
+                    </label>
                     <textarea
                       value={newNoteContent}
                       onChange={(e) => setNewNoteContent(e.target.value)}
@@ -220,7 +243,9 @@ export function NotesGrid({ workspaceId }: NotesGridProps) {
                       rows={8}
                       className="w-full px-4 py-2 bg-black/50 border border-blue-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 transition-all font-mono text-sm"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Markdown supported</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Markdown supported
+                    </p>
                   </div>
 
                   {/* Action Buttons */}
@@ -251,5 +276,5 @@ export function NotesGrid({ workspaceId }: NotesGridProps) {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
