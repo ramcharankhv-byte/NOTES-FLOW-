@@ -16,7 +16,11 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: [process.env.CORS_ORIGIN || "http://localhost:3000"],
+    origin: [
+      process.env.CORS_ORIGIN || "http://localhost:3000",
+      "https://notes-flow.vercel.app", // Your Vercel frontend
+      "http://localhost:3000", // Local development
+    ],
     credentials: true,
   }),
 );
