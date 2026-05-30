@@ -218,7 +218,11 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, { user: user, accessToken: token }, "Current user fetched succesfully"),
+      new ApiResponse(
+        200,
+        { user: user, accessToken: token },
+        "Current user fetched succesfully",
+      ),
     );
 });
 
@@ -311,8 +315,8 @@ const googleCallback = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, cookieOptions)
         .cookie("refreshToken", refreshToken, cookieOptions);
 
-      // Redirect to dashboard with success query param
-      return res.redirect(`${frontendUrl}/dashboard?auth=success`);
+      // Redirect to callback page with success query param
+      return res.redirect(`${frontendUrl}/auth/callback?auth=success`);
     }
 
     // --- CASE B: NEW USER SIGNUP (Requires Username Step) ---
