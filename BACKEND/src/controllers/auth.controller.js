@@ -54,7 +54,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
   };
 
   return res
@@ -99,7 +101,9 @@ const login = asyncHandler(async (req, res) => {
 
     const options = {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
     };
 
     return res
@@ -133,7 +137,9 @@ const logout = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
   };
 
   return res
@@ -171,7 +177,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
   };
 
   const { accessToken, refreshToken } = await generateAccessandRefreshTokens(
@@ -291,11 +299,6 @@ const googleCallback = asyncHandler(async (req, res) => {
     // Look for existing user profile
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
 
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-    };
-
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
     // --- CASE A: USER LOGINS DIRECTLY ---
@@ -310,13 +313,22 @@ const googleCallback = asyncHandler(async (req, res) => {
       user.refreshToken = refreshToken;
       await user.save({ validateBeforeSave: false });
 
-      // Set cookies and redirect with success
+      // Set cookies with proper options
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+      };
+
       res
         .cookie("accessToken", accessToken, cookieOptions)
         .cookie("refreshToken", refreshToken, cookieOptions);
 
-      // Redirect to callback page with success query param
-      return res.redirect(`${frontendUrl}/auth/callback?auth=success`);
+      // Redirect to callback page with token in URL as backup
+      return res.redirect(
+        `${frontendUrl}/auth/callback?auth=success&token=${accessToken}`,
+      );
     }
 
     // --- CASE B: NEW USER SIGNUP (Requires Username Step) ---
@@ -397,6 +409,8 @@ const completeGoogleSignup = asyncHandler(async (req, res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
   };
 
   return res

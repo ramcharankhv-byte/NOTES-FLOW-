@@ -9,6 +9,7 @@ export default function CallbackPage() {
   const searchParams = useSearchParams();
   const { initializeAuth, isInitialized } = useAuthStore();
   const authSuccess = searchParams.get("auth") === "success";
+  const token = searchParams.get("token");
   const error = searchParams.get("error");
 
   useEffect(() => {
@@ -19,19 +20,22 @@ export default function CallbackPage() {
         return;
       }
 
-      if (authSuccess) {
-        // Reinitialize auth to fetch user from backend
+      if (authSuccess && token) {
+        // Save token to localStorage immediately
+        if (typeof window !== "undefined") {
+          localStorage.setItem("accessToken", token);
+        }
+
+        // Reinitialize auth to fetch user from backend with the token
         await initializeAuth();
 
-        // Small delay to ensure state is updated
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 500);
+        // Redirect to dashboard
+        router.push("/dashboard");
       }
     };
 
     handleCallback();
-  }, [authSuccess, error, router, initializeAuth]);
+  }, [authSuccess, token, error, router, initializeAuth]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
