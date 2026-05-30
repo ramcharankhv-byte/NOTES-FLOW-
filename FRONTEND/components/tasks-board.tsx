@@ -1,66 +1,91 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useTasksStore, TaskStatus, Task, useWorkspaceStore, useAuthStore } from '@/lib/store'
-import { motion, AnimatePresence, Droppable, Draggable } from 'framer-motion'
-import { Search, Plus, Trash2, Clock } from 'lucide-react'
+import { useState, useEffect } from "react";
+import {
+  useTasksStore,
+  TaskStatus,
+  Task,
+  useWorkspaceStore,
+  useAuthStore,
+} from "@/lib/store";
+import { motion, AnimatePresence, Droppable, Draggable } from "framer-motion";
+import { Search, Plus, Trash2, Clock } from "lucide-react";
 
 interface TasksBoardProps {
-  workspaceId: string
+  workspaceId: string;
 }
 
 export function TasksBoard({ workspaceId }: TasksBoardProps) {
-  const { tasks, fetchTasks, createTask, updateTaskStatus, deleteTask } = useTasksStore()
-  const { currentWorkspace } = useWorkspaceStore()
-  const { user } = useAuthStore()
-  const isOwner = currentWorkspace?.owner.id === user?.id
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [newTaskAssignee, setNewTaskAssignee] = useState('')
+  const { tasks, fetchTasks, createTask, updateTaskStatus, deleteTask } =
+    useTasksStore();
+  const { currentWorkspace } = useWorkspaceStore();
+  const { user } = useAuthStore();
+  const isOwner = currentWorkspace?.owner.id === user?.id;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskAssignee, setNewTaskAssignee] = useState("");
 
   useEffect(() => {
-    fetchTasks(workspaceId)
-  }, [workspaceId, fetchTasks])
+    fetchTasks(workspaceId);
+  }, [workspaceId, fetchTasks]);
 
   const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newTaskTitle.trim() || !newTaskAssignee.trim()) return
+    e.preventDefault();
+    if (!newTaskTitle.trim() || !newTaskAssignee.trim()) return;
 
-    await createTask(workspaceId, newTaskTitle, newTaskAssignee)
-    setNewTaskTitle('')
-    setNewTaskAssignee('')
-    setIsCreateModalOpen(false)
-  }
+    await createTask(workspaceId, newTaskTitle, newTaskAssignee);
+    setNewTaskTitle("");
+    setNewTaskAssignee("");
+    setIsCreateModalOpen(false);
+  };
 
-  const handleTaskStatusChange = async (taskId: string, newStatus: TaskStatus) => {
-    await updateTaskStatus(taskId, newStatus)
-  }
+  const handleTaskStatusChange = async (
+    taskId: string,
+    newStatus: TaskStatus,
+  ) => {
+    await updateTaskStatus(taskId, newStatus);
+  };
 
   const handleDeleteTask = async (taskId: string) => {
-    await deleteTask(taskId)
-  }
+    await deleteTask(taskId);
+  };
 
   const statuses: { status: TaskStatus; label: string; color: string }[] = [
-    { status: 'pending', label: 'Pending', color: 'from-yellow-600 to-yellow-400' },
-    { status: 'in-progress', label: 'In Progress', color: 'from-blue-600 to-blue-400' },
-    { status: 'completed', label: 'Completed', color: 'from-green-600 to-green-400' },
-  ]
+    {
+      status: "pending",
+      label: "Pending",
+      color: "from-yellow-600 to-yellow-400",
+    },
+    {
+      status: "in-progress",
+      label: "In Progress",
+      color: "from-blue-600 to-blue-400",
+    },
+    {
+      status: "completed",
+      label: "Completed",
+      color: "from-green-600 to-green-400",
+    },
+  ];
 
   const getTasksByStatus = (status: TaskStatus) => {
     return tasks
-      .filter(task => task.status === status)
-      .filter(task =>
-        task.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-  }
+      .filter((task) => task.status === status)
+      .filter((task) =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Search tasks..."
@@ -84,21 +109,18 @@ export function TasksBoard({ workspaceId }: TasksBoardProps) {
       </div>
 
       {/* Kanban Board */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-      >
+      <motion.div layout className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {statuses.map(({ status, label, color }) => {
-          const statusTasks = getTasksByStatus(status)
+          const statusTasks = getTasksByStatus(status);
           return (
-            <motion.div
-              key={status}
-              layout
-              className="space-y-4"
-            >
+            <motion.div key={status} layout className="space-y-4">
               {/* Column Header */}
-              <div className={`flex items-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r ${color} bg-opacity-10 border border-opacity-20 border-gray-400`}>
-                <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${color}`} />
+              <div
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r ${color} bg-opacity-10 border border-opacity-20 border-gray-400`}
+              >
+                <div
+                  className={`w-3 h-3 rounded-full bg-gradient-to-r ${color}`}
+                />
                 <h3 className="font-bold text-white">{label}</h3>
                 <span className="ml-auto text-xs text-gray-400 bg-white/10 px-2 py-1 rounded">
                   {statusTasks.length}
@@ -135,7 +157,10 @@ export function TasksBoard({ workspaceId }: TasksBoardProps) {
                         {/* Assignee */}
                         <div className="flex items-center gap-2 mb-3">
                           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center text-white text-xs font-bold">
-                            {task.assignedTo.username?.charAt(0).toUpperCase() || task.assignedTo.name?.charAt(0).toUpperCase()}
+                            {task.assignedTo.username
+                              ?.charAt(0)
+                              .toUpperCase() ||
+                              task.assignedTo.name?.charAt(0).toUpperCase()}
                           </div>
                           <span className="text-xs text-gray-400 truncate">
                             {task.assignedTo.username || task.assignedTo.name}
@@ -146,22 +171,28 @@ export function TasksBoard({ workspaceId }: TasksBoardProps) {
                         {task.dueDate && (
                           <div className="flex items-center gap-2 mb-3 text-xs text-gray-400">
                             <Clock size={14} />
-                            <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                            <span>
+                              {new Date(task.dueDate).toLocaleDateString()}
+                            </span>
                           </div>
                         )}
 
                         {/* Status Buttons */}
-                        {(isOwner || task.assignedTo._id === user?.id || task.assignedTo.id === user?.id) && (
-                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity pt-3 border-t border-blue-400/10">
+                        {(isOwner ||
+                          task.assignedTo._id === user?.id ||
+                          task.assignedTo.id === user?.id) && (
+                          <div className="flex gap-2 pt-3 border-t border-blue-400/10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                             {statuses
-                              .filter(s => s.status !== status)
-                              .map(s => (
+                              .filter((s) => s.status !== status)
+                              .map((s) => (
                                 <motion.button
                                   key={s.status}
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
-                                  onClick={() => handleTaskStatusChange(task.id, s.status)}
-                                  className="flex-1 text-xs px-2 py-1 rounded bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 transition-colors font-medium"
+                                  onClick={() =>
+                                    handleTaskStatusChange(task.id, s.status)
+                                  }
+                                  className="flex-1 text-xs px-2 py-1 rounded bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 transition-colors font-medium cursor-pointer"
                                 >
                                   {s.label}
                                 </motion.button>
@@ -171,7 +202,7 @@ export function TasksBoard({ workspaceId }: TasksBoardProps) {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleDeleteTask(task.id)}
-                                className="text-xs px-2 py-1 rounded bg-red-600/20 hover:bg-red-600/40 text-red-300 transition-colors"
+                                className="text-xs px-2 py-1 rounded bg-red-600/20 hover:bg-red-600/40 text-red-300 transition-colors cursor-pointer"
                               >
                                 <Trash2 size={12} />
                               </motion.button>
@@ -192,7 +223,7 @@ export function TasksBoard({ workspaceId }: TasksBoardProps) {
                 </AnimatePresence>
               </motion.div>
             </motion.div>
-          )
+          );
         })}
       </motion.div>
 
@@ -215,12 +246,16 @@ export function TasksBoard({ workspaceId }: TasksBoardProps) {
               className="fixed inset-0 flex items-center justify-center z-50 p-4"
             >
               <div className="glass rounded-2xl p-8 max-w-md w-full border border-blue-400/20">
-                <h2 className="text-2xl font-bold text-white mb-6">Create Task</h2>
+                <h2 className="text-2xl font-bold text-white mb-6">
+                  Create Task
+                </h2>
 
                 <form onSubmit={handleCreateTask} className="space-y-4">
                   {/* Title Input */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Task Title</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Task Title
+                    </label>
                     <input
                       type="text"
                       value={newTaskTitle}
@@ -233,15 +268,23 @@ export function TasksBoard({ workspaceId }: TasksBoardProps) {
 
                   {/* Assignee Input */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Assign To</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Assign To
+                    </label>
                     <select
                       value={newTaskAssignee}
                       onChange={(e) => setNewTaskAssignee(e.target.value)}
                       className="w-full px-4 py-2 bg-black/50 border border-blue-500/30 rounded-lg text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 transition-all appearance-none"
                     >
-                      <option value="" disabled className="text-gray-500">Select a member...</option>
-                      {currentWorkspace?.members.map(member => (
-                        <option key={member.id} value={member.id} className="text-white bg-gray-900">
+                      <option value="" disabled className="text-gray-500">
+                        Select a member...
+                      </option>
+                      {currentWorkspace?.members.map((member) => (
+                        <option
+                          key={member.id}
+                          value={member.id}
+                          className="text-white bg-gray-900"
+                        >
                           {member.username || member.name}
                         </option>
                       ))}
@@ -276,5 +319,5 @@ export function TasksBoard({ workspaceId }: TasksBoardProps) {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
