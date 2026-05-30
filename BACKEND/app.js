@@ -14,13 +14,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
+// Parse CORS_ORIGIN environment variable (comma-separated for multiple origins)
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+  : ["http://localhost:3000"];
+
 app.use(
   cors({
-    origin: [
-      process.env.CORS_ORIGIN || "http://localhost:3000",
-      "https://notes-flow.vercel.app", // Your Vercel frontend
-      "http://localhost:3000", // Local development
-    ],
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
