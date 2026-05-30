@@ -69,7 +69,7 @@ export function LandingPage() {
 
             {/* RIGHT SIDE: Text Data and Badges Layout (12 out of 12 Columns) */}
             <motion.div
-              className="text-center lg:text-left lg:col-span-12 flex flex-col justify-center items-center lg:items-start px-2 sm:px-0"
+              className="text-center lg:col-span-12 flex flex-col justify-center items-center px-2 sm:px-0"
               style={{ scale, opacity }}
               variants={containerVariants}
               initial="hidden"
@@ -114,7 +114,7 @@ export function LandingPage() {
               {/* BUTTONS */}
               <motion.div
                 variants={itemVariants}
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start items-stretch sm:items-center mb-8 sm:mb-12 w-full px-2 sm:px-0"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center mb-8 sm:mb-12 w-full px-2 sm:px-0"
               >
                 <Link href="/auth/signup" className="w-full sm:w-auto">
                   <button className="group w-full sm:w-auto justify-center px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 text-sm sm:text-base">
@@ -136,7 +136,7 @@ export function LandingPage() {
               {/* FEATURE TAGS */}
               <motion.div
                 variants={itemVariants}
-                className="flex flex-wrap gap-2 sm:gap-4 justify-center lg:justify-start w-full px-2 sm:px-0"
+                className="flex flex-wrap gap-2 sm:gap-4 justify-center w-full px-2 sm:px-0"
               >
                 {[
                   { icon: Zap, label: "Real-time" },
