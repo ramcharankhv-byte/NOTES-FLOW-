@@ -1,6 +1,28 @@
 # Notes-Flow 🚀
 
-A futuristic, premium SaaS note-taking application built with Next.js 16, React Three Fiber, Framer Motion, and Zustand. Experience the future of note-taking with stunning 3D visualizations, glassmorphism design, and smooth animations.
+A futuristic, premium SaaS note-taking and workspace management application built with Next.js 16, React Three Fiber, Framer Motion, and Zustand on the frontend, and Express.js with MongoDB on the backend. Experience the future of note-taking with stunning 3D visualizations, glassmorphism design, and smooth animations.
+
+## 🏗️ Full-Stack Architecture
+
+Notes-Flow implements a modern full-stack architecture with a clear separation of concerns:
+
+### Frontend (React/Next.js)
+- Built with Next.js 16 (App Router), React 19, TypeScript
+- State management with Zustand
+- Styling with Tailwind CSS v4 and glassmorphism effects
+- Animations powered by Framer Motion and GSAP
+- 3D visualizations using React Three Fiber and Drei
+
+### Backend (Node.js/Express)
+- RESTful API built with Express.js
+- MongoDB database with Mongoose ODM
+- JWT-based authentication (access/refresh tokens)
+- Google OAuth 2.0 integration
+- Modular structure with controllers, models, routes, and middleware
+- Input validation using express-validator
+- Secure cookie handling with HttpOnly flags
+
+This documentation covers both the frontend implementation details and the backend API workflows that power the application.
 
 ## ✨ Features
 
@@ -248,6 +270,181 @@ The app is optimized for Vercel and uses Next.js 16 best practices.
 - [Framer Motion](https://www.framer.com/motion/)
 - [Zustand](https://zustand.surge.sh/)
 - [Tailwind CSS v4](https://tailwindcss.com/docs)
+- [Express.js](https://expressjs.com/)
+- [MongoDB & Mongoose](https://mongoosejs.com/)
+- [JSON Web Tokens](https://jwt.io/)
+- [Google OAuth 2.0](https://developers.google.com/identity/protocols/oauth2)
+
+## 🔧 Backend Architecture & API Workflows
+
+### 📂 Backend Structure
+
+The backend follows a modular MVC-like structure:
+
+```
+BACKEND/
+├── src/
+│   ├── controllers/   # Request handlers (auth, notes, workspace, task)
+│   ├── models/        # Mongoose schemas (User, Note, Workspace, Task)
+│   ├── routes/        # API route definitions
+│   ├── middleware/    # Custom middleware (auth, validation)
+│   ├── utils/         # Utility functions (async handler, API response/error)
+│   ├── validators/    # Input validation schemas
+│   └── db/            # Database connection configuration
+├── app.js             # Express app configuration
+├── index.js           # Server entry point
+├── package.json       # Backend dependencies
+└── .env               # Environment variables
+```
+
+### 🔐 Authentication System
+
+The backend implements a robust JWT-based authentication system with:
+
+1. **Local Authentication** (email/password):
+   - Secure password hashing using bcrypt
+   - Access tokens (short-lived) and refresh tokens (long-lived)
+   - HTTP-only cookies for secure token storage
+   - Token refresh mechanism to maintain sessions
+
+2. **Google OAuth 2.0 Integration**:
+   - Initiates OAuth flow via `/api/v1/auth/google`
+   - Handles callback with split logic for existing vs. new users
+   - For new users: redirects to complete signup with temporary JWT
+   - Username validation and account creation
+   - Automatic login after successful OAuth completion
+
+3. **Security Features**:
+   - HttpOnly, Secure, SameSite cookie flags
+   - Token expiration and refresh mechanisms
+   - Protection against common vulnerabilities (XSS, CSRF via cookies)
+   - Input validation and sanitization
+
+### 📝 Core API Workflows
+
+Based on the PRD documentation, here are the key backend workflows:
+
+#### 1. User Authentication Flow
+- **POST `/api/v1/auth/register`**: Local user registration with email/password
+- **POST `/api/v1/auth/login`**: Local user login
+- **GET `/api/v1/auth/google`**: Initiate Google OAuth flow
+- **GET `/api/v1/auth/google/callback`**: Handle Google OAuth callback
+- **POST `/api/v1/auth/google/complete-signup`**: Complete OAuth signup with username
+- **POST `/api/v1/auth/refresh-token`**: Refresh access token using refresh token
+- **POST `/api/v1/auth/logout`**: Clear authentication cookies
+- **GET `/api/v1/auth/me`**: Get current authenticated user
+
+#### 2. Workspace Management
+- **GET `/api/v1/workspaces/`**: Get all workspaces for user
+- **POST `/api/v1/workspaces/`**: Create new workspace (sets user as owner)
+- **GET `/api/v1/workspaces/search?query=...`**: Search workspaces by name
+- **PATCH `/api/v1/workspaces/:id/add`**: Add member to workspace (owner only)
+- **PATCH `/api/v1/workspaces/:id/leave`**: Leave workspace (member)
+- **DELETE `/api/v1/workspaces/:id`**: Delete workspace (owner only)
+
+#### 3. Notes Management
+- **GET `/api/v1/notes/:workspaceId`**: Get paginated notes for workspace
+- **POST `/api/v1/notes/:workspaceId`**: Create new note in workspace
+- **PATCH `/api/v1/notes/:noteId`**: Update note content/title
+- **DELETE `/api/v1/notes/:noteId`**: Delete note
+- **GET `/api/v1/notes/:workspaceId/search?query=...`**: Search notes in workspace
+
+#### 4. Task Management (Kanban)
+- **GET `/api/v1/tasks/:workspaceId`**: Get tasks assigned to current user in workspace
+- **POST `/api/v1/tasks/:workspaceId`**: Create new task (workspace owner only)
+- **PATCH `/api/v1/tasks/:taskId`**: Update task details
+- **PATCH `/api/v1/tasks/:taskId/status`**: Update task status (pending/in-progress/completed)
+- **PATCH `/api/v1/tasks/:taskId/assign`**: Reassign task to different user
+- **DELETE `/api/v1/tasks/:taskId`**: Delete task
+
+### 🗄️ Data Models
+
+#### User Model
+- `username`: Unique, lowercase username
+- `email`: Unique email address
+- `password`: Hashed password (for local auth)
+- `googleId`: Google OAuth ID (for OAuth users)
+- `refreshToken`: Hashed refresh token for token rotation
+- `createdAt/updatedAt`: Timestamps
+
+#### Workspace Model
+- `name`: Workspace name
+- `owner`: Reference to User (workspace creator)
+- `members`: Array of User references with access
+- `createdAt/updatedAt`: Timestamps
+
+#### Note Model
+- `title`: Note title
+- `content`: Note content (markdown supported)
+- `workspace`: Reference to Workspace
+- `createdBy`: Reference to User (creator)
+- `createdAt/updatedAt`: Timestamps
+
+#### Task Model
+- `title`: Task title
+- `description`: Task description
+- `workspace`: Reference to Workspace
+- `assignedTo`: Reference to User (assignee)
+- `status`: Enum ['pending', 'in-progress', 'completed']
+- `createdBy`: Reference to User (creator)
+- `createdAt/updatedAt`: Timestamps
+
+### 🔄 Development Workflow
+
+1. **Backend Setup**:
+   ```bash
+   cd BACKEND
+   npm install
+   # Configure .env file with required variables
+   npm run dev  # Start development server with nodemon
+   ```
+
+2. **Environment Variables** (`.env`):
+   ```
+   PORT=5000
+   NODE_ENV=development
+   JWT_SECRET=your_jwt_secret_here
+   JWT_EXPIRES_IN=15m
+   JWT_REFRESH_EXPIRES_IN=7d
+   
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   GOOGLE_REDIRECT_URI=http://localhost:5000/api/v1/auth/google/callback
+   
+   FRONTEND_URL=http://localhost:3000
+   
+   MONGODB_URI=mongodb://localhost:27017/notesflow
+   ```
+
+3. **API Testing**:
+   - The backend provides RESTful JSON APIs
+   - All authenticated routes require valid access token in cookies
+   - Error responses follow consistent format with status codes and messages
+   - Successful responses include data payloads and status information
+
+### ⚡ Key Features Implemented
+
+✅ **Complete Authentication System** (local + Google OAuth)  
+✅ **Workspace CRUD Operations** with member management  
+✅ **Full Notes Management** (create, read, update, delete)  
+✅ **Kanban-style Task Board** with status transitions  
+✅ **Input Validation & Sanitization**  
+✅ **Secure Token Management** (access/refresh tokens)  
+✅ **Error Handling & Consistent API Responses**  
+✅ **CORS Configuration** for frontend integration  
+✅ **Modular, Maintainable Code Structure**  
+
+### 🚀 Next Steps for Backend
+
+- [ ] Add pagination to workspace and task endpoints
+- [ ] Implement real-time updates with WebSockets
+- [ ] Add file upload capabilities for notes
+- [ ] Implement advanced search and filtering
+- [ ] Add API rate limiting and enhanced security headers
+- [ ] Create comprehensive API documentation (Swagger/OpenAPI)
+- [ ] Add automated testing suite (unit and integration tests)
+- [ ] Implement caching layer for improved performance
+- [ ] Add audit logging for administrative actions
 
 ## 📄 License
 
